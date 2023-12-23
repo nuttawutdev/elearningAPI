@@ -1,0 +1,10 @@
+Token : 5ca9fa0c26420da73ed5e2b20add71b7
+
+dotnet add .\ELEARNING.API\ELEARNING.API.csproj reference .\ELEARNING.API\ELEARNING.API.csproj 
+
+dotnet sln add .\ELEARNING.API\ELEARNING.API.csproj
+
+https://player.vimeo.com/video/894521767?h=0c333956e5
+894521767
+
+https://vimeo.com/894521767
