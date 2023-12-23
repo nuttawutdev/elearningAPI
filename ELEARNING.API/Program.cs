@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using ELEARNING.Dependencies;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,12 @@ builder.Host.ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.AddJsonFile($"appsettings.json", true, true);
                 }); ;
+
+builder.Services.Configure<FormOptions>(x =>
+{
+    x.ValueLengthLimit = int.MaxValue;
+    x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
