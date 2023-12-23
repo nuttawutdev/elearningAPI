@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using ELEARNING.Repositories.Entities;
+using ELEARNING.Repositories.Interfaces;
 using ELEARNING.Services.Helpers;
 using ELEARNING.Services.Interfaces;
 using ELEARNING.Services.Models.Request;
@@ -14,8 +16,10 @@ namespace ELEARNING.Services.Services
     public class CourseService : ICourseService
     {
         private readonly VimeoClient _vimeoClient;
-        public CourseService()
+        private readonly ICourseRepository _courseRepository;
+        public CourseService(ICourseRepository courseRepository)
         {
+            _courseRepository = courseRepository;
             _vimeoClient = new VimeoClient("5ca9fa0c26420da73ed5e2b20add71b7");
         }
 
@@ -37,15 +41,94 @@ namespace ELEARNING.Services.Services
                     folderID = folder.Data.FirstOrDefault(c => c.Name == "FOLDER TEST").Id.Value;
                 }
 
-                (BinaryContent binaryContent, int chunkSize) = Utility.ConvertIFromFileToBinary(request.coverImageVideo);
+                (BinaryContent binaryContentIntroductionCourseVideo, int chunkSize) = Utility.ConvertIFromFileToBinary(request.introductionCourseVideo);
+                var uploadIntroductionCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentIntroductionCourseVideo, chunkSize, null);
 
-                var uploadRequest = await _vimeoClient.UploadEntireFileAsync(binaryContent, chunkSize, null);
+                var introductionCourseVideoID = uploadIntroductionCourseVideoResponse.ClipId.Value;
+                BinaryContent binaryContentCover = new BinaryContent(request.coverImageVideo.OpenReadStream(), request.coverImageVideo.ContentType);
+                var uploadCoverResponse = await _vimeoClient.UploadThumbnailAsync(introductionCourseVideoID, binaryContentCover);
+
+                VideoUpdateMetadata updateVideo = new VideoUpdateMetadata
+                {
+                    Name = request.courseName
+                };
+                await _vimeoClient.UpdateVideoMetadataAsync(introductionCourseVideoID, updateVideo);
+
+                await _vimeoClient.MoveVideoToFolder(folderID, introductionCourseVideoID);
+
+                THCourse insertCourse = new THCourse
+                {
+                    ID = Guid.NewGuid(),
+                    Course_Name = request.courseName,
+                    Second_Course_Name = request.secondCourseName,
+                    Course_Desc = request.description,
+                    Level_ID = request.levelID,
+                    Link_Cover_Course_Video_ID = uploadCoverResponse.Uri,
+                    Video_ID = introductionCourseVideoID.ToString(),
+                    Price = request.price,
+                    Remark = request.remark,
+                    Create_By = "ADMIN",
+                    Create_Date = DateTime.Now
+                };
+
+                var insertCourseResponse = await _courseRepository.InsertTHCourse(insertCourse);
+
+                foreach (var itemSection in request.sectionVideo)
+                {
+                    TDCourseSection courseSection = new TDCourseSection
+                    {
+                        ID = Guid.NewGuid(),
+                        Course_ID = insertCourse.ID,
+                        Section_Name = itemSection.sectionName,
+                        Section_Number = itemSection.sectionNumber,
+                        Create_By = "ADMIN",
+                        Create_Date = DateTime.Now
+                    };
+
+                    var insertCourseSectionResponse = await _courseRepository.InsertTDCourseSection(courseSection);
+                    foreach (var itemVideo in itemSection.videoList)
+                    {
+                        (BinaryContent binaryContentVideo, int chunkSizeVideo) = Utility.ConvertIFromFileToBinary(itemVideo.video);
+                        var uploadCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentVideo, chunkSizeVideo, null);
+
+                        var courseVideoID = uploadCourseVideoResponse.ClipId.Value;
+                        VideoUpdateMetadata updateCourseVideo = new VideoUpdateMetadata
+                        {
+                            Name = itemVideo.videoName
+                        };
+                        await _vimeoClient.UpdateVideoMetadataAsync(courseVideoID, updateCourseVideo);
+
+                        await _vimeoClient.MoveVideoToFolder(folderID, courseVideoID);
+
+                        TDCourseVideo courseVideo = new TDCourseVideo
+                        {
+                            ID = Guid.NewGuid(),
+                            Course_ID = insertCourse.ID,
+                            Course_Section_ID = courseSection.ID,
+                            Video_ID = courseVideoID.ToString(),
+                            Video_Name = itemVideo.videoName,
+                            Create_By = "ADMIN",
+                            Create_Date = DateTime.Now
+                        };
+
+                        var insertVideoCourse = await _courseRepository.InsertTDCourseVideo(courseVideo);
+                    }
+
+                }
+
+                response.data = new CreateCourseResult
+                {
+                    courseID = insertCourse.ID
+                };
+                response.responseCode = "200";
+                response.responseMessage = "Success";
             }
             catch (Exception ex)
             {
-
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
             }
-            throw new System.NotImplementedException();
+            return response;
         }
 
     }

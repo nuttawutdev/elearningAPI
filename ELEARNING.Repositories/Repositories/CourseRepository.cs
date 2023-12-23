@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
 using ELEARNING.Repositories.Context;
 using ELEARNING.Repositories.Interfaces;
-using ELEARNING.Services.Models.Request;
 using DapperExtensions;
 using ELEARNING.Repositories.Entities;
+using System;
+using Dapper;
 
 namespace ELEARNING.Repositories.Repositories
 {
@@ -15,54 +16,84 @@ namespace ELEARNING.Repositories.Repositories
             _context = context;
         }
 
-        public async Task<bool> InsertTHCourse(THCourse request)
+        public async Task<sp_insert_course> InsertTHCourse(THCourse request)
         {
             try
             {
+                string store = "sp_insert_course";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", request.ID);
+                queryParam.Add("@Course_Name", request.Course_Name);
+                queryParam.Add("@Second_Course_Name", request.Second_Course_Name);
+                queryParam.Add("@Course_Desc", request.Course_Desc);
+                queryParam.Add("@Link_Cover_Course_Video_ID", request.Link_Cover_Course_Video_ID);
+                queryParam.Add("@Video_ID", request.Video_ID);
+                queryParam.Add("@Level_ID", request.Level_ID);
+                queryParam.Add("@Price", request.Price);
+                queryParam.Add("@Remark", request.Remark);
+                queryParam.Add("@Create_By", request.Create_By);
+                queryParam.Add("@Create_Date", request.Create_Date);
+
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.InsertAsync(request);
+                    var result = await connection.QueryFirstAsync<sp_insert_course>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
                 }
-
-                return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                throw;
             }
         }
 
-        public async Task<bool> InsertTDCourseSection(TDCourseSection request)
+        public async Task<sp_insert_course_section> InsertTDCourseSection(TDCourseSection request)
         {
             try
             {
+                string store = "sp_insert_course_section";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", request.ID);
+                queryParam.Add("@Course_ID", request.Course_ID);
+                queryParam.Add("@Section_Name", request.Section_Name);
+                queryParam.Add("@Section_Number", request.Section_Number);
+                queryParam.Add("@Create_By", request.Create_By);
+                queryParam.Add("@Create_Date", request.Create_Date);
+
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.InsertAsync(request);
+                    var result = await connection.QueryFirstAsync<sp_insert_course_section>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
                 }
-
-                return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                throw;
             }
         }
 
-        public async Task<bool> InsertTDCourseVideo(TDCourseVideo request)
+        public async Task<sp_insert_course_video> InsertTDCourseVideo(TDCourseVideo request)
         {
             try
             {
+                string store = "sp_insert_course_video";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", request.ID);
+                queryParam.Add("@Course_ID", request.Course_ID);
+                queryParam.Add("@Course_Section_ID", request.Course_Section_ID);
+                queryParam.Add("@Video_Name", request.Video_Name);
+                queryParam.Add("@Video_ID", request.Video_ID);
+                queryParam.Add("@Create_By", request.Create_By);
+                queryParam.Add("@Create_Date", request.Create_Date);
+
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.InsertAsync(request);
+                    var result = await connection.QueryFirstAsync<sp_insert_course_video>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
                 }
-
-                return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                throw;
             }
         }
 

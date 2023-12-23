@@ -1,3 +1,6 @@
+using ELEARNING.Repositories.Context;
+using ELEARNING.Repositories.Interfaces;
+using ELEARNING.Repositories.Repositories;
 using ELEARNING.Services.Interfaces;
 using ELEARNING.Services.Services;
 using Microsoft.Extensions.Configuration;
@@ -9,8 +12,10 @@ namespace ELEARNING.Dependencies
     {
         public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
         {
-            //Logging
             services.AddScoped<ICourseService, CourseService>();
+
+            services.AddSingleton<DBContext>();
+            services.AddScoped<ICourseRepository, CourseRepository>();
 
             return services;
         }

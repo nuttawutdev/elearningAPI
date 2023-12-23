@@ -9,4 +9,7 @@
     <PackageReference Include="VimeoDotNet" Version="3.2.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ELEARNING.Repositories\ELEARNING.Repositories.csproj"/>
+  </ItemGroup>
 </Project>

@@ -18,6 +18,7 @@ namespace ELEARNING.API.Controllers
         }
 
         [HttpPost]
+        [DisableRequestSizeLimit]
         [Route("course/v1/create-course")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CreateCourseResponse))]
         public async Task<IActionResult> CreateCourse([FromForm] CreateCourseRequest request)

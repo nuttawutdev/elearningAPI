@@ -8,6 +8,7 @@ namespace ELEARNING.Services.Models.Request
         public string courseName { get; set; }
         public string secondCourseName { get; set; }
         public string description { get; set; }
+        public decimal price { get; set; }
         public IFormFile coverImageVideo { get; set; }
         public IFormFile introductionCourseVideo { get; set; }
         public int levelID { get; set; }

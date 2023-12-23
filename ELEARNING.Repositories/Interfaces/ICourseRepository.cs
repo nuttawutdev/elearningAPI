@@ -1,11 +1,12 @@
 using System.Threading.Tasks;
 using ELEARNING.Repositories.Entities;
-using ELEARNING.Services.Models.Request;
 
 namespace ELEARNING.Repositories.Interfaces
 {
     public interface ICourseRepository
     {
-        Task<bool> InsertTHCourse(THCourse newCource);
+        Task<sp_insert_course> InsertTHCourse(THCourse newCource);
+        Task<sp_insert_course_section> InsertTDCourseSection(TDCourseSection request);
+        Task<sp_insert_course_video> InsertTDCourseVideo(TDCourseVideo request);
     }
 }
