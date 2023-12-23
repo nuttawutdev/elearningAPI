@@ -40,9 +40,10 @@ namespace ELEARNING.API.Controllers
         }
 
         [HttpPost]
+        [DisableRequestSizeLimit]
         [SwaggerOperation(Tags = new[] { "Common" }, Description = "Check alive api for monitoring")]
         [Route("uploadvideo")]
-        public async Task<IActionResult> NewRequestFromForm([FromForm] IFormFile videoFile)
+        public async Task<IActionResult> NewRequestFromForm([FromForm] IFormFile videoFile, IFormFile cover)
         {
             string tagName = "tagName";
 
@@ -62,24 +63,24 @@ namespace ELEARNING.API.Controllers
                     long AlbumID = 0;
                     var allAlbum = await vimeoClient.GetAlbumsAsync(UserId.Me.Id);
 
-                    if (allAlbum.Data.Exists(c => c.Name == "TEST ALBUM"))
-                    {
-                        //
-                        AlbumID = allAlbum.Data.FirstOrDefault(c => c.Name == "TEST ALBUM").GetAlbumId().Value;
-                        var albumVideo = await vimeoClient.GetAlbumVideosAsync(UserId.Me.Id, AlbumID);
-                        if (albumVideo.Data.Any())
-                        {
-                            await vimeoClient.DeleteVideoAsync(long.Parse(albumVideo.Data.First().Id.Value.ToString()));
-                           // await vimeoClient.RemoveFromAlbumAsync(UserId.Me.Id, AlbumID, long.Parse(albumVideo.Data.First().Id.Value.ToString()));
-                        }
-                    }
+                    // if (allAlbum.Data.Exists(c => c.Name == "TEST ALBUM"))
+                    // {
+                    //     //
+                    //     AlbumID = allAlbum.Data.FirstOrDefault(c => c.Name == "TEST ALBUM").GetAlbumId().Value;
+                    //     var albumVideo = await vimeoClient.GetAlbumVideosAsync(UserId.Me.Id, AlbumID);
+                    //     if (albumVideo.Data.Any())
+                    //     {
+                    //         await vimeoClient.DeleteVideoAsync(long.Parse(albumVideo.Data.First().Id.Value.ToString()));
+                    //        // await vimeoClient.RemoveFromAlbumAsync(UserId.Me.Id, AlbumID, long.Parse(albumVideo.Data.First().Id.Value.ToString()));
+                    //     }
+                    // }
                     // EditAlbumParameters parameterAl = new EditAlbumParameters
                     // {
                     //     Name = "TEST ALBUM"
                     // };
                     // var createAlbum = await vimeoClient.CreateAlbumAsync(UserId.Me.Id, parameterAl);
                     // Create Folder
-                    // var createFolderRes = await vimeoClient.CreateFolder(UserId.Me.Id,"TESTUSER");
+                    var createFolderRes = await vimeoClient.CreateFolder(UserId.Me.Id, "TEST IMAGE");
                     // var jsonString = JsonSerializer.Serialize(createFolderRes);
 
                     // Get all video
@@ -120,8 +121,15 @@ namespace ELEARNING.API.Controllers
                         }
                         var checkChunk = chunkSize;
                         var status = "uploading";
-                        // uploadRequest = await vimeoClient.UploadEntireFileAsync(binaryContent, chunkSize, null);
+                        uploadRequest = await vimeoClient.UploadEntireFileAsync(binaryContent, chunkSize, null);
 
+                        BinaryContent binaryContentCover = new BinaryContent(cover.OpenReadStream(), cover.ContentType);
+                        await vimeoClient.UploadThumbnailAsync(long.Parse(uploadRequest.ClipId.Value.ToString()), binaryContentCover);
+                        VideoUpdateMetadata updateVideo = new VideoUpdateMetadata
+                        {
+                            Name = "ทดสอบวิดีโอ"
+                        };
+                        await vimeoClient.UpdateVideoMetadataAsync(long.Parse(uploadRequest.ClipId.Value.ToString()),updateVideo);
                         // var _tag = tagName;
                         // var tagVideo = await vimeoClient.AddVideoTagAsync(uploadRequest.ClipId.GetValueOrDefault(), _tag);
 
