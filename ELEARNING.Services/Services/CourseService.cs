@@ -6,6 +6,7 @@ using ELEARNING.Repositories.Interfaces;
 using ELEARNING.Services.Helpers;
 using ELEARNING.Services.Interfaces;
 using ELEARNING.Services.Models.Request;
+using ELEARNING.Services.Models.Response;
 using VimeoDotNet;
 using VimeoDotNet.Models;
 using VimeoDotNet.Net;
@@ -131,5 +132,61 @@ namespace ELEARNING.Services.Services
             return response;
         }
 
+        public async Task<GetAllCourseResponse> GetAllCourse(GetAllCourseRequest request)
+        {
+            GetAllCourseResponse response = new GetAllCourseResponse();
+
+            try
+            {
+                var getAllCourseResponse = await _courseRepository.GetCourse();
+                if (getAllCourseResponse.Any())
+                {
+                    getAllCourseResponse = getAllCourseResponse.Skip((request.pageNo - 1) * request.pageSize)
+                                            .Take(request.pageSize).ToList();
+
+                    if (getAllCourseResponse.Any())
+                    {
+                        var allVideo = await _vimeoClient.GetVideosAsync(UserId.Me.Id, null, null);
+                        if (allVideo != null && allVideo.Data.Any())
+                        {
+                            var videoData = allVideo.Data;
+                            response.data = getAllCourseResponse.Select(c => new CourseData
+                            {
+                                courseID = c.ID,
+                                courseName = c.Course_Name,
+                                createBy = c.Create_By,
+                                price = c.Price,
+                                linkCoverCourseVideo = videoData.FirstOrDefault(x => x.Id.ToString() == c.Video_ID)?.Pictures?.Link
+                            }).ToList();
+                            response.responseCode = "200";
+                            response.responseMessage = "Success";
+                        }
+                        else
+                        {
+                            response.responseCode = "404";
+                            response.responseMessage = "ไม่พบข้อมูล";
+                        }
+                    }
+                    else
+                    {
+                        response.responseCode = "404";
+                        response.responseMessage = "ไม่พบข้อมูล";
+                    }
+
+                }
+                else
+                {
+                    response.responseCode = "404";
+                    response.responseMessage = "ไม่พบข้อมูล";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
+            }
+
+            return response;
+        }
     }
 }

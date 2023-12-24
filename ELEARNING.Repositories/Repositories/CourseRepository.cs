@@ -5,6 +5,8 @@ using DapperExtensions;
 using ELEARNING.Repositories.Entities;
 using System;
 using Dapper;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ELEARNING.Repositories.Repositories
 {
@@ -89,6 +91,24 @@ namespace ELEARNING.Repositories.Repositories
                 {
                     var result = await connection.QueryFirstAsync<sp_insert_course_video>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
                     return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<List<sp_get_course>> GetCourse()
+        {
+            try
+            {
+                string store = "sp_get_course";
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<sp_get_course>(store, commandType: System.Data.CommandType.StoredProcedure);
+                    return result.ToList();
                 }
             }
             catch (Exception ex)

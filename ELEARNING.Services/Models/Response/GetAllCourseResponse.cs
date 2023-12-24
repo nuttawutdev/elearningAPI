@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace ELEARNING.Services.Models.Response
 {
-    public class GetAllVideoResponse : BaseResponse
+    public class GetAllCourseResponse : BaseResponse
     {
-        public List<VideoData> data { get; set; }
+        public List<CourseData> data { get; set; }
     }
 
-    public class VideoData
+    public class CourseData
     {
         public Guid courseID { get; set; }
         public string courseName { get; set; }

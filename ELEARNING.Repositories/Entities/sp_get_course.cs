@@ -2,7 +2,7 @@ using System;
 
 namespace ELEARNING.Repositories.Entities
 {
-    public class THCourse
+    public class sp_get_course
     {
         public Guid ID { get; set; }
         public string Course_Name { get; set; }
@@ -15,7 +15,5 @@ namespace ELEARNING.Repositories.Entities
         public string Remark { get; set; }
         public string Create_By { get; set; }
         public DateTime Create_Date { get; set; }
-        public string Update_By { get; set; }
-        public DateTime? Update_Date { get; set; }
     }
 }

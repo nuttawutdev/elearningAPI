@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using ELEARNING.Services.Interfaces;
 using ELEARNING.Services.Models.Request;
+using ELEARNING.Services.Models.Response;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static ELEARNING.Services.Models.Commom.AppEnum;
@@ -27,6 +28,25 @@ namespace ELEARNING.API.Controllers
             try
             {
                 response = await _courseService.CreateCourse(request);
+            }
+            catch (System.Exception ex)
+            {
+                response.data = null;
+                response.responseCode = ResponseCode.InternalError.Text();
+                response.responseMessage = "เกิดข้อผิดพลาดในระบบ";
+            };
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [Route("course/v1/get-all-course")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetAllCourseResponse))]
+        public async Task<IActionResult> GetAllCourse([FromBody] GetAllCourseRequest request)
+        {
+            var response = new GetAllCourseResponse();
+            try
+            {
+                response = await _courseService.GetAllCourse(request);
             }
             catch (System.Exception ex)
             {
