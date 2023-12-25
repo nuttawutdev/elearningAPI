@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using ELEARNING.Services.Interfaces;
 using ELEARNING.Services.Models.Request;
@@ -47,6 +48,26 @@ namespace ELEARNING.API.Controllers
             try
             {
                 response = await _courseService.GetAllCourse(request);
+            }
+            catch (System.Exception ex)
+            {
+                response.data = null;
+                response.responseCode = ResponseCode.InternalError.Text();
+                response.responseMessage = "เกิดข้อผิดพลาดในระบบ";
+            };
+            return Ok(response);
+        }
+
+
+        [HttpGet]
+        [Route("course/v1/get-course-detail")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetCourseDetailResponse))]
+        public async Task<IActionResult> GetCourseDetail(Guid courseID)
+        {
+            var response = new GetCourseDetailResponse();
+            try
+            {
+                response = await _courseService.GetCourseDetail(courseID);
             }
             catch (System.Exception ex)
             {

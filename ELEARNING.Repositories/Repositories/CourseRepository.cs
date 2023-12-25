@@ -117,5 +117,44 @@ namespace ELEARNING.Repositories.Repositories
             }
         }
 
+        public async Task<sp_get_course_by_id> GetCourseByID(Guid courseID)
+        {
+            try
+            {
+                string store = "sp_get_course_by_id";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@CourseID", courseID);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryFirstAsync<sp_get_course_by_id>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<List<sp_get_course_section>> GetCourseSection(Guid courseID)
+        {
+            try
+            {
+                string store = "sp_get_course_section";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@CourseID", courseID);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<sp_get_course_section>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }

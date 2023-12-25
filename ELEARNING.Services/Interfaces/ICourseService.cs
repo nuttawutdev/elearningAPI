@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using ELEARNING.Services.Models.Request;
 using ELEARNING.Services.Models.Response;
@@ -8,5 +9,6 @@ namespace ELEARNING.Services.Interfaces
     {
         Task<CreateCourseResponse> CreateCourse(CreateCourseRequest request);
         Task<GetAllCourseResponse> GetAllCourse(GetAllCourseRequest request);
+        Task<GetCourseDetailResponse> GetCourseDetail(Guid courseID);
     }
 }

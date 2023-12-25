@@ -188,5 +188,51 @@ namespace ELEARNING.Services.Services
 
             return response;
         }
+
+        public async Task<GetCourseDetailResponse> GetCourseDetail(Guid courseID)
+        {
+            GetCourseDetailResponse response = new GetCourseDetailResponse();
+
+            try
+            {
+                var getCourseByIDResponse = await _courseRepository.GetCourseByID(courseID);
+                if (getCourseByIDResponse != null)
+                {
+                    var getCourseSectionResponse = await _courseRepository.GetCourseSection(courseID);
+
+                    var videoIntroduction = await _vimeoClient.GetVideoAsync(long.Parse(getCourseByIDResponse.Video_ID));
+
+                    response.data = new CourseDetailData
+                    {
+                        courseID = getCourseByIDResponse.ID,
+                        courseName = getCourseByIDResponse.Course_Name,
+                        courseDescription = getCourseByIDResponse.Course_Desc,
+                        createBy = getCourseByIDResponse.Create_By,
+                        linkCourseIntroductionVideo = videoIntroduction?.Player_Embed_Url,
+                        price = getCourseByIDResponse.Price,
+                        secondCourseName = getCourseByIDResponse.Second_Course_Name,
+                        courseSection = getCourseSectionResponse.Select(c => new CourseSection
+                        {
+                            sectionNumber = c.Section_Number,
+                            sectionName = c.Section_Name
+                        }).ToList()
+                    };
+                    response.responseCode = "200";
+                    response.responseMessage = "Success";
+                }
+                else
+                {
+                    response.responseCode = "404";
+                    response.responseMessage = "ไม่พบข้อมูล";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
+            }
+
+            return response;
+        }
     }
 }
