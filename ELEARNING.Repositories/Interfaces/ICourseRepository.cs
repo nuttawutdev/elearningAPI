@@ -13,5 +13,6 @@ namespace ELEARNING.Repositories.Interfaces
         Task<List<sp_get_course>> GetCourse();
         Task<sp_get_course_by_id> GetCourseByID(Guid courseID);
         Task<List<sp_get_course_section>> GetCourseSection(Guid courseID);
+        Task<List<sp_get_course_video>> GetCourseVideo(Guid courseID);
     }
 }

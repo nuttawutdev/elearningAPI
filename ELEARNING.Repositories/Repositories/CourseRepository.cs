@@ -156,5 +156,26 @@ namespace ELEARNING.Repositories.Repositories
                 throw;
             }
         }
+
+        public async Task<List<sp_get_course_video>> GetCourseVideo(Guid courseID)
+        {
+            try
+            {
+                string store = "sp_get_course_video";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@CourseID", courseID);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<sp_get_course_video>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
     }
 }

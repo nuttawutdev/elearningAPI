@@ -10,5 +10,6 @@ namespace ELEARNING.Services.Interfaces
         Task<CreateCourseResponse> CreateCourse(CreateCourseRequest request);
         Task<GetAllCourseResponse> GetAllCourse(GetAllCourseRequest request);
         Task<GetCourseDetailResponse> GetCourseDetail(Guid courseID);
+        Task<GetMyCourseDetailResponse> GetMyCourseDetail(GetMyCourseDetailRequest request);
     }
 }
