@@ -235,6 +235,77 @@ namespace ELEARNING.Services.Services
             return response;
         }
 
+        public async Task<GetInstructorCourseDetailResponse> GetInstructorCourseDetail(GetMyCourseDetailRequest request)
+        {
+            GetInstructorCourseDetailResponse response = new GetInstructorCourseDetailResponse();
+
+            try
+            {
+                var folder = await _vimeoClient.GetUserFolders(UserId.Me.Id, null, null);
+                long folderID = 0;
+                request.userID = "FOLDER TEST";
+
+                if (!folder.Data.Exists(c => c.Name == request.userID))
+                {
+                    response.responseCode = "404";
+                    response.responseMessage = "ไม่พบข้อมูล";
+                    return response;
+                }
+                else
+                {
+                    folderID = folder.Data.FirstOrDefault(c => c.Name == request.userID).Id.Value;
+                }
+
+                var getCourseByIDResponse = await _courseRepository.GetCourseByID(request.courseID);
+                if (getCourseByIDResponse != null)
+                {
+                    var getCourseSectionResponse = await _courseRepository.GetCourseSection(request.courseID);
+                    var getCourseVideoResponse = await _courseRepository.GetCourseVideo(request.courseID);
+
+                    var allVideoFromFolder = await _vimeoClient.GetAllVideosFromFolderAsync(folderID, UserId.Me.Id);
+
+                    var videoIntroduction = allVideoFromFolder?.Data.FirstOrDefault(c => c.Id.ToString() == getCourseByIDResponse.Video_ID);
+                    response.data = new InstructorCourseDetailData
+                    {
+                        courseID = getCourseByIDResponse.ID,
+                        courseName = getCourseByIDResponse.Course_Name,
+                        courseDescription = getCourseByIDResponse.Course_Desc,
+                        createBy = getCourseByIDResponse.Create_By,
+                        linkCourseIntroductionVideo = videoIntroduction?.Player_Embed_Url,
+                        linkCoverCourseVideo = videoIntroduction?.Pictures?.Link,
+                        secondCourseName = getCourseByIDResponse.Second_Course_Name,
+                        price = getCourseByIDResponse.Price,
+                        courseSection = getCourseSectionResponse.Select(c => new InstructorCourseSection
+                        {
+                            courseSectionID = c.ID,
+                            sectionNumber = c.Section_Number,
+                            sectionName = c.Section_Name,
+                            courseVideo = getCourseVideoResponse.Where(v => v.Course_Section_ID == c.ID).Select(d => new InstructorCourseVideo
+                            {
+                                courseVideoID = d.ID,
+                                videoName = d.Video_Name,
+                                linkCourseVideo = allVideoFromFolder?.Data.FirstOrDefault(c => c.Id.ToString() == d.Video_ID)?.Player_Embed_Url,
+                            }).ToList()
+                        }).ToList()
+                    };
+                    response.responseCode = "200";
+                    response.responseMessage = "Success";
+                }
+                else
+                {
+                    response.responseCode = "404";
+                    response.responseMessage = "ไม่พบข้อมูล";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
+            }
+
+            return response;
+        }
+
         public async Task<GetMyCourseDetailResponse> GetMyCourseDetail(GetMyCourseDetailRequest request)
         {
             GetMyCourseDetailResponse response = new GetMyCourseDetailResponse();

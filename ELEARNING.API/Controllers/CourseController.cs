@@ -97,6 +97,25 @@ namespace ELEARNING.API.Controllers
             return Ok(response);
         }
 
+        [HttpPost]
+        [Route("course/v1/get-instructor-course-detail")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetInstructorCourseDetailResponse))]
+        public async Task<IActionResult> GetInstructorCourseDetail(GetMyCourseDetailRequest request)
+        {
+            var response = new GetInstructorCourseDetailResponse();
+            try
+            {
+                response = await _courseService.GetInstructorCourseDetail(request);
+            }
+            catch (System.Exception ex)
+            {
+                response.data = null;
+                response.responseCode = ResponseCode.InternalError.Text();
+                response.responseMessage = "เกิดข้อผิดพลาดในระบบ";
+            };
+            return Ok(response);
+        }
+
 
     }
 }
