@@ -74,7 +74,7 @@ namespace ELEARNING.Services.Services
                     Course_Name = request.courseName,
                     Second_Course_Name = request.secondCourseName,
                     Course_Desc = request.description,
-                    Level_ID = request.levelID,
+                    Level_ID = 0,
                     Link_Cover_Course_Video_ID = uploadCoverUri,
                     Video_ID = introductionCourseVideoID,
                     Price = request.price,
@@ -87,17 +87,20 @@ namespace ELEARNING.Services.Services
 
                 foreach (var itemSection in request.sectionVideo)
                 {
+                    int sectionNumber = 1;
                     TDCourseSection courseSection = new TDCourseSection
                     {
                         ID = Guid.NewGuid(),
                         Course_ID = insertCourse.ID,
                         Section_Name = itemSection.sectionName,
-                        Section_Number = itemSection.sectionNumber,
+                        Section_Number = sectionNumber,
                         Create_By = "ADMIN",
                         Create_Date = DateTime.Now
                     };
 
                     var insertCourseSectionResponse = await _courseRepository.InsertTDCourseSection(courseSection);
+
+                    sectionNumber++;
                     foreach (var itemVideo in itemSection.videoList)
                     {
                         string courseVideoID = string.Empty;

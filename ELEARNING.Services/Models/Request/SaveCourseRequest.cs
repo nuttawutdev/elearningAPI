@@ -13,9 +13,9 @@ namespace ELEARNING.Services.Models.Request
         public decimal price { get; set; }
         public IFormFile? coverImageVideo { get; set; }
         public IFormFile? introductionCourseVideo { get; set; }
-        public int levelID { get; set; }
-        public string remark { get; set; }
         public List<CourseSectionVideoRequest> sectionVideo { get; set; }
+        public string userID { get; set; }
+        public string remark { get; set; }
     }
 
     public class CourseSectionVideoRequest
