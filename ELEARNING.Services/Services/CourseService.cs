@@ -30,6 +30,29 @@ namespace ELEARNING.Services.Services
 
             try
             {
+                if (!request.courseID.HasValue)
+                {
+                    response = await CreateCourse(request);
+                }
+                else
+                {
+                    response = await UpdateCourse(request);
+                }
+            }
+            catch (Exception ex)
+            {
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
+            }
+            return response;
+        }
+
+        private async Task<SaveCourseResponse> CreateCourse(SaveCourseRequest request)
+        {
+            SaveCourseResponse response = new SaveCourseResponse();
+
+            try
+            {
                 var folder = await _vimeoClient.GetUserFolders(UserId.Me.Id, null, null);
                 long folderID = 0;
                 if (!folder.Data.Exists(c => c.Name == "FOLDER TEST"))
@@ -140,6 +163,39 @@ namespace ELEARNING.Services.Services
                 response.data = new SaveCourseResult
                 {
                     courseID = insertCourse.ID
+                };
+                response.responseCode = "200";
+                response.responseMessage = "Success";
+            }
+            catch (Exception ex)
+            {
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
+            }
+            return response;
+        }
+
+        private async Task<SaveCourseResponse> UpdateCourse(SaveCourseRequest request)
+        {
+            SaveCourseResponse response = new SaveCourseResponse();
+
+            try
+            {
+                var folder = await _vimeoClient.GetUserFolders(UserId.Me.Id, null, null);
+                long folderID = 0;
+                if (!folder.Data.Exists(c => c.Name == "FOLDER TEST"))
+                {
+                    var createFolderRes = await _vimeoClient.CreateFolder(UserId.Me.Id, "FOLDER TEST");
+                    folderID = createFolderRes.Id.Value;
+                }
+                else
+                {
+                    folderID = folder.Data.FirstOrDefault(c => c.Name == "FOLDER TEST").Id.Value;
+                }
+
+                response.data = new SaveCourseResult
+                {
+    
                 };
                 response.responseCode = "200";
                 response.responseMessage = "Success";
