@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace ELEARNING.Services.Models.Request
 {
-    public class CreateCourseResponse : BaseResponse
+    public class SaveCourseResponse : BaseResponse
     {
-        public CreateCourseResult data { get; set; }
+        public SaveCourseResult data { get; set; }
     }
 
-    public class CreateCourseResult
+    public class SaveCourseResult
     {
         public Guid courseID { get; set; }
     }

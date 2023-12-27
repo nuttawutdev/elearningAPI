@@ -21,14 +21,14 @@ namespace ELEARNING.API.Controllers
 
         [HttpPost]
         [DisableRequestSizeLimit]
-        [Route("course/v1/create-course")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CreateCourseResponse))]
-        public async Task<IActionResult> CreateCourse([FromForm] CreateCourseRequest request)
+        [Route("course/v1/save-course")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SaveCourseResponse))]
+        public async Task<IActionResult> SaveCourse([FromForm] SaveCourseRequest request)
         {
-            var response = new CreateCourseResponse();
+            var response = new SaveCourseResponse();
             try
             {
-                response = await _courseService.CreateCourse(request);
+                response = await _courseService.SaveCourse(request);
             }
             catch (System.Exception ex)
             {

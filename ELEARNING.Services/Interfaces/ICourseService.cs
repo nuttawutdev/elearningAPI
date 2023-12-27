@@ -7,7 +7,7 @@ namespace ELEARNING.Services.Interfaces
 {
     public interface ICourseService
     {
-        Task<CreateCourseResponse> CreateCourse(CreateCourseRequest request);
+        Task<SaveCourseResponse> SaveCourse(SaveCourseRequest request);
         Task<GetAllCourseResponse> GetAllCourse(GetAllCourseRequest request);
         Task<GetCourseDetailResponse> GetCourseDetail(Guid courseID);
         Task<GetMyCourseDetailResponse> GetMyCourseDetail(GetMyCourseDetailRequest request);

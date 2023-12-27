@@ -24,9 +24,9 @@ namespace ELEARNING.Services.Services
             _vimeoClient = new VimeoClient("5ca9fa0c26420da73ed5e2b20add71b7");
         }
 
-        public async Task<CreateCourseResponse> CreateCourse(CreateCourseRequest request)
+        public async Task<SaveCourseResponse> SaveCourse(SaveCourseRequest request)
         {
-            CreateCourseResponse response = new CreateCourseResponse();
+            SaveCourseResponse response = new SaveCourseResponse();
 
             try
             {
@@ -134,7 +134,7 @@ namespace ELEARNING.Services.Services
 
                 }
 
-                response.data = new CreateCourseResult
+                response.data = new SaveCourseResult
                 {
                     courseID = insertCourse.ID
                 };
