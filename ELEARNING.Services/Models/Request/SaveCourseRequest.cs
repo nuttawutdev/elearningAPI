@@ -20,7 +20,7 @@ namespace ELEARNING.Services.Models.Request
 
     public class CourseSectionVideoRequest
     {
-        public Guid courseSectionID { get; set; }
+        public Guid? courseSectionID { get; set; }
         public string sectionName { get; set; }
         public int sectionNumber { get; set; }
         public List<CourseVideoRequest> videoList { get; set; }
@@ -29,7 +29,7 @@ namespace ELEARNING.Services.Models.Request
 
     public class CourseVideoRequest
     {
-        public Guid courseVideoID { get; set; }
+        public Guid? courseVideoID { get; set; }
         public string videoName { get; set; }
         public IFormFile video { get; set; }
         public string action { get; set; }

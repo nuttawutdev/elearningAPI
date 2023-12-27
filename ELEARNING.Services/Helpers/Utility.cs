@@ -8,6 +8,11 @@ namespace ELEARNING.Services.Helpers
     {
         public static (BinaryContent, int) ConvertIFromFileToBinary(IFormFile file)
         {
+            if (file == null)
+            {
+                return (null, 0);
+            }
+            
             try
             {
                 BinaryContent binaryContent = new BinaryContent(file.OpenReadStream(), file.ContentType);
