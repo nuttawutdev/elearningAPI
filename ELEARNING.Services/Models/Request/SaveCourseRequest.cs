@@ -6,7 +6,7 @@ namespace ELEARNING.Services.Models.Request
 {
     public class SaveCourseRequest
     {
-        public Guid? courseID { get; set; }
+        public string courseID { get; set; }
         public string courseName { get; set; }
         public string secondCourseName { get; set; }
         public string description { get; set; }
@@ -20,16 +20,16 @@ namespace ELEARNING.Services.Models.Request
 
     public class CourseSectionVideoRequest
     {
-        public Guid? courseSectionID { get; set; }
+        public string courseSectionID { get; set; }
         public string sectionName { get; set; }
         public int sectionNumber { get; set; }
         public List<CourseVideoRequest> videoList { get; set; }
-        public string action { get; set; }
+        public string action { get; set; }//add, edit, delete
     }
 
     public class CourseVideoRequest
     {
-        public Guid? courseVideoID { get; set; }
+        public string courseVideoID { get; set; }
         public string videoName { get; set; }
         public IFormFile? video { get; set; }
         public string action { get; set; }

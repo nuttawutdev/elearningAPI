@@ -30,7 +30,7 @@ namespace ELEARNING.Services.Services
 
             try
             {
-                if (!request.courseID.HasValue)
+                if (string.IsNullOrWhiteSpace(request.courseID))
                 {
                     response = await CreateCourse(request);
                 }
@@ -162,7 +162,7 @@ namespace ELEARNING.Services.Services
 
                 response.data = new SaveCourseResult
                 {
-                    courseID = insertCourse.ID
+                    courseID = insertCourse.ID.ToString()
                 };
                 response.responseCode = "200";
                 response.responseMessage = "Success";
@@ -228,7 +228,7 @@ namespace ELEARNING.Services.Services
                             var videoData = allVideo.Data;
                             response.data = getAllCourseResponse.Select(c => new CourseData
                             {
-                                courseID = c.ID,
+                                courseID = c.ID.ToString(),
                                 courseName = c.Course_Name,
                                 createBy = c.Create_By,
                                 price = c.Price,
@@ -280,13 +280,14 @@ namespace ELEARNING.Services.Services
 
                     response.data = new CourseDetailData
                     {
-                        courseID = getCourseByIDResponse.ID,
+                        courseID = getCourseByIDResponse.ID.ToString(),
                         courseName = getCourseByIDResponse.Course_Name,
                         courseDescription = getCourseByIDResponse.Course_Desc,
                         createBy = getCourseByIDResponse.Create_By,
                         linkCourseIntroductionVideo = videoIntroduction?.Player_Embed_Url,
                         price = getCourseByIDResponse.Price,
                         secondCourseName = getCourseByIDResponse.Second_Course_Name,
+                        remark = getCourseByIDResponse.Remark,
                         courseSection = getCourseSectionResponse.Select(c => new CourseSection
                         {
                             sectionNumber = c.Section_Number,
@@ -332,18 +333,18 @@ namespace ELEARNING.Services.Services
                     folderID = folder.Data.FirstOrDefault(c => c.Name == request.userID).Id.Value;
                 }
 
-                var getCourseByIDResponse = await _courseRepository.GetCourseByID(request.courseID);
+                var getCourseByIDResponse = await _courseRepository.GetCourseByID(new Guid(request.courseID));
                 if (getCourseByIDResponse != null)
                 {
-                    var getCourseSectionResponse = await _courseRepository.GetCourseSection(request.courseID);
-                    var getCourseVideoResponse = await _courseRepository.GetCourseVideo(request.courseID);
+                    var getCourseSectionResponse = await _courseRepository.GetCourseSection(new Guid(request.courseID));
+                    var getCourseVideoResponse = await _courseRepository.GetCourseVideo(new Guid(request.courseID));
 
                     var allVideoFromFolder = await _vimeoClient.GetAllVideosFromFolderAsync(folderID, UserId.Me.Id);
 
                     var videoIntroduction = allVideoFromFolder?.Data.FirstOrDefault(c => c.Id.ToString() == getCourseByIDResponse.Video_ID);
                     response.data = new InstructorCourseDetailData
                     {
-                        courseID = getCourseByIDResponse.ID,
+                        courseID = getCourseByIDResponse.ID.ToString(),
                         courseName = getCourseByIDResponse.Course_Name,
                         courseDescription = getCourseByIDResponse.Course_Desc,
                         createBy = getCourseByIDResponse.Create_By,
@@ -351,14 +352,15 @@ namespace ELEARNING.Services.Services
                         linkCoverCourseVideo = videoIntroduction?.Pictures?.Link,
                         secondCourseName = getCourseByIDResponse.Second_Course_Name,
                         price = getCourseByIDResponse.Price,
+                        remark = getCourseByIDResponse.Remark,
                         courseSection = getCourseSectionResponse.Select(c => new InstructorCourseSection
                         {
-                            courseSectionID = c.ID,
+                            courseSectionID = c.ID.ToString(),
                             sectionNumber = c.Section_Number,
                             sectionName = c.Section_Name,
                             courseVideo = getCourseVideoResponse.Where(v => v.Course_Section_ID == c.ID).Select(d => new InstructorCourseVideo
                             {
-                                courseVideoID = d.ID,
+                                courseVideoID = d.ID.ToString(),
                                 videoName = d.Video_Name,
                                 linkCourseVideo = allVideoFromFolder?.Data.FirstOrDefault(c => c.Id.ToString() == d.Video_ID)?.Player_Embed_Url,
                             }).ToList()
@@ -403,25 +405,26 @@ namespace ELEARNING.Services.Services
                     folderID = folder.Data.FirstOrDefault(c => c.Name == request.userID).Id.Value;
                 }
 
-                var getCourseByIDResponse = await _courseRepository.GetCourseByID(request.courseID);
+                var getCourseByIDResponse = await _courseRepository.GetCourseByID(new Guid(request.courseID));
                 if (getCourseByIDResponse != null)
                 {
-                    var getCourseSectionResponse = await _courseRepository.GetCourseSection(request.courseID);
-                    var getCourseVideoResponse = await _courseRepository.GetCourseVideo(request.courseID);
+                    var getCourseSectionResponse = await _courseRepository.GetCourseSection(new Guid(request.courseID));
+                    var getCourseVideoResponse = await _courseRepository.GetCourseVideo(new Guid(request.courseID));
 
                     var allVideoFromFolder = await _vimeoClient.GetAllVideosFromFolderAsync(folderID, UserId.Me.Id);
 
                     response.data = new MyCourseDetailData
                     {
-                        courseID = getCourseByIDResponse.ID,
+                        courseID = getCourseByIDResponse.ID.ToString(),
                         courseName = getCourseByIDResponse.Course_Name,
                         courseDescription = getCourseByIDResponse.Course_Desc,
                         createBy = getCourseByIDResponse.Create_By,
                         linkCourseIntroductionVideo = allVideoFromFolder?.Data.FirstOrDefault(c => c.Id.ToString() == getCourseByIDResponse.Video_ID)?.Player_Embed_Url,
                         secondCourseName = getCourseByIDResponse.Second_Course_Name,
+                        remark = getCourseByIDResponse.Remark,
                         courseSection = getCourseSectionResponse.Select(c => new MyCourseSection
                         {
-                            courseSectionID = c.ID,
+                            courseSectionID = c.ID.ToString(),
                             sectionNumber = c.Section_Number,
                             sectionName = c.Section_Name,
                             courseVideo = getCourseVideoResponse.Where(v => v.Course_Section_ID == c.ID).Select(d => new MyCourseVideo

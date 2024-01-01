@@ -10,7 +10,7 @@ namespace ELEARNING.Services.Models.Response
 
     public class InstructorCourseDetailData
     {
-        public Guid courseID { get; set; }
+        public string courseID { get; set; }
         public string courseName { get; set; }
         public string secondCourseName { get; set; }
         public string courseDescription { get; set; }
@@ -18,12 +18,13 @@ namespace ELEARNING.Services.Models.Response
         public string linkCourseIntroductionVideo { get; set; }
         public string linkCoverCourseVideo { get; set; }
         public decimal price { get; set; }
+        public string remark { get; set; }
         public List<InstructorCourseSection> courseSection { get; set; }
     }
 
     public class InstructorCourseSection
     {
-        public Guid courseSectionID { get; set; }
+        public string courseSectionID { get; set; }
         public int sectionNumber { get; set; }
         public string sectionName { get; set; }
         public List<InstructorCourseVideo> courseVideo { get; set; }
@@ -31,7 +32,7 @@ namespace ELEARNING.Services.Models.Response
 
     public class InstructorCourseVideo
     {
-        public Guid courseVideoID { get; set; }
+        public string courseVideoID { get; set; }
         public string videoName { get; set; }
         public string linkCourseVideo { get; set; }
     }

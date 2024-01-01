@@ -10,7 +10,7 @@ namespace ELEARNING.Services.Models.Response
 
     public class CourseData
     {
-        public Guid courseID { get; set; }
+        public string courseID { get; set; }
         public string courseName { get; set; }
         public string createBy { get; set; }
         public decimal price { get; set; }

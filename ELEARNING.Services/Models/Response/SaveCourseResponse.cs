@@ -12,6 +12,6 @@ namespace ELEARNING.Services.Models.Request
 
     public class SaveCourseResult
     {
-        public Guid courseID { get; set; }
+        public string courseID { get; set; }
     }
 }

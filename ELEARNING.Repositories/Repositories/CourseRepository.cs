@@ -177,5 +177,34 @@ namespace ELEARNING.Repositories.Repositories
             }
         }
 
+        public async Task<sp_update_course> UpdateTHCourse(THCourse request)
+        {
+            try
+            {
+                string store = "sp_update_course";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", request.ID);
+                queryParam.Add("@Course_Name", request.Course_Name);
+                queryParam.Add("@Second_Course_Name", request.Second_Course_Name);
+                queryParam.Add("@Course_Desc", request.Course_Desc);
+                queryParam.Add("@Link_Cover_Course_Video_ID", request.Link_Cover_Course_Video_ID);
+                queryParam.Add("@Video_ID", request.Video_ID);
+                queryParam.Add("@Level_ID", request.Level_ID);
+                queryParam.Add("@Price", request.Price);
+                queryParam.Add("@Remark", request.Remark);
+                queryParam.Add("@Update_By", request.Update_By);
+                queryParam.Add("@Update_Date", request.Update_Date);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryFirstAsync<sp_update_course>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }

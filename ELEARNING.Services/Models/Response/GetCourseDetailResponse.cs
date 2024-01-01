@@ -10,12 +10,13 @@ namespace ELEARNING.Services.Models.Response
 
     public class CourseDetailData
     {
-        public Guid courseID { get; set; }
+        public string courseID { get; set; }
         public string courseName { get; set; }
         public string secondCourseName { get; set; }
         public string courseDescription { get; set; }
         public string createBy { get; set; }
         public decimal price { get; set; }
+        public string remark { get; set; }
         public string linkCourseIntroductionVideo { get; set; }
         public List<CourseSection> courseSection { get; set; }
     }
