@@ -206,5 +206,114 @@ namespace ELEARNING.Repositories.Repositories
                 throw;
             }
         }
+
+        public async Task<sp_update_course_section> UpdateTDCourseSection(TDCourseSection request)
+        {
+            try
+            {
+                string store = "sp_update_course_section";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", request.ID);
+                queryParam.Add("@Section_Name", request.Section_Name);
+                queryParam.Add("@Section_Number", request.Section_Number);
+                queryParam.Add("@Update_By", request.Update_By);
+                queryParam.Add("@Update_Date", request.Update_Date);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryFirstAsync<sp_update_course_section>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<sp_update_course_video> UpdateTDCourseVideo(TDCourseVideo request)
+        {
+            try
+            {
+                string store = "sp_update_course_video";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", request.ID);
+                queryParam.Add("@Video_Name", request.Video_Name);
+                queryParam.Add("@Video_ID", request.Video_ID);
+                queryParam.Add("@Update_By", request.Update_By);
+                queryParam.Add("@Update_Date", request.Update_Date);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryFirstAsync<sp_update_course_video>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<sp_delete_course> DeleteCourse(Guid courseID)
+        {
+            try
+            {
+                string store = "sp_delete_course";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", courseID);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryFirstAsync<sp_delete_course>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<sp_delete_course_section> DeleteCourseSection(Guid courseID)
+        {
+            try
+            {
+                string store = "sp_delete_course_section";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", courseID);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryFirstAsync<sp_delete_course_section>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<sp_delete_course_video> DeleteCourseVideo(Guid courseID)
+        {
+            try
+            {
+                string store = "sp_delete_course_video";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@ID", courseID);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryFirstAsync<sp_delete_course_video>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
     }
 }

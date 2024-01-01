@@ -193,9 +193,72 @@ namespace ELEARNING.Services.Services
                     folderID = folder.Data.FirstOrDefault(c => c.Name == "FOLDER TEST").Id.Value;
                 }
 
+                var courseDetail = await _courseRepository.GetCourseByID(new Guid(request.courseID));
+                string introductionCourseVideoID = string.Empty;
+                string uploadCoverUri = string.Empty;
+                long introductionCourseClipID = 0;
+
+                #region Update Introduction Course
+                if (request.introductionCourseVideo != null)
+                {
+                    (BinaryContent binaryContentIntroductionCourseVideo, int chunkSize) = Utility.ConvertIFromFileToBinary(request.introductionCourseVideo);
+                    var uploadIntroductionCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentIntroductionCourseVideo, chunkSize, null);
+
+                    introductionCourseClipID = uploadIntroductionCourseVideoResponse.ClipId.Value;
+                    introductionCourseVideoID = introductionCourseClipID.ToString();
+
+                    VideoUpdateMetadata updateVideo = new VideoUpdateMetadata
+                    {
+                        Name = request.courseName
+                    };
+                    await _vimeoClient.UpdateVideoMetadataAsync(introductionCourseClipID, updateVideo);
+                    await _vimeoClient.MoveVideoToFolder(folderID, introductionCourseClipID);
+                }
+                else
+                {
+                    introductionCourseClipID = long.Parse(courseDetail.Video_ID);
+                    introductionCourseVideoID = courseDetail.Video_ID;
+                    VideoUpdateMetadata updateVideo = new VideoUpdateMetadata
+                    {
+                        Name = request.courseName
+                    };
+                    await _vimeoClient.UpdateVideoMetadataAsync(introductionCourseClipID, updateVideo);
+                }
+                #endregion
+
+                #region Update Cover Image
+                if (request.coverImageVideo != null)
+                {
+                    BinaryContent binaryContentCover = new BinaryContent(request.coverImageVideo.OpenReadStream(), request.coverImageVideo.ContentType);
+                    var uploadCoverResponse = await _vimeoClient.UploadThumbnailAsync(introductionCourseClipID, binaryContentCover);
+                    uploadCoverUri = uploadCoverResponse.Link;
+                }
+                else
+                {
+                    uploadCoverUri = courseDetail.Link_Cover_Course_Video_ID;
+                }
+                #endregion
+
+                THCourse updateCourse = new THCourse
+                {
+                    ID = new Guid(request.courseID),
+                    Course_Name = request.courseName,
+                    Second_Course_Name = request.secondCourseName,
+                    Course_Desc = request.description,
+                    Level_ID = 0,
+                    Link_Cover_Course_Video_ID = uploadCoverUri,
+                    Video_ID = introductionCourseVideoID,
+                    Price = request.price,
+                    Remark = request.remark,
+                    Update_By = "ADMIN",
+                    Update_Date = DateTime.Now
+                };
+
+                var updateCourseResponse = await _courseRepository.UpdateTHCourse(updateCourse);
+
                 response.data = new SaveCourseResult
                 {
-    
+
                 };
                 response.responseCode = "200";
                 response.responseMessage = "Success";
