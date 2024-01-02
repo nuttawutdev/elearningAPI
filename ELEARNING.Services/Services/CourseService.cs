@@ -267,9 +267,9 @@ namespace ELEARNING.Services.Services
 
                 #region Insert New Section
                 var lastedSection = courseSection.OrderByDescending(d => d.Section_Number).FirstOrDefault();
+                int sectionNumber = lastedSection.Section_Number + 1;
                 foreach (var itemSection in sectionAdd)
                 {
-                    int sectionNumber = lastedSection.Section_Number;
                     TDCourseSection insertCourseSection = new TDCourseSection
                     {
                         ID = Guid.NewGuid(),
@@ -337,16 +337,126 @@ namespace ELEARNING.Services.Services
                 }
                 #endregion
 
+                #region Update Section
                 foreach (var itemSection in sectionEdit)
                 {
-                    var videoDelete = request.sectionVideo.Where(c => c.action == "delete");
-                    var videoAdd = request.sectionVideo.Where(c => c.action == "add");
-                    var videoEdit = request.sectionVideo.Where(c => c.action == "edit" || string.IsNullOrWhiteSpace(c.action));
-                }
+                    var lastedVideoInSection = videoCourse.OrderByDescending(d => d.Video_Number).FirstOrDefault();
+                    var videoDelete = itemSection.videoList.Where(c => c.action == "delete");
+                    var videoAdd = itemSection.videoList.Where(c => c.action == "add");
+                    var videoEdit = itemSection.videoList.Where(c => c.action == "edit" || string.IsNullOrWhiteSpace(c.action));
+                    int videoNumber = lastedVideoInSection.Video_Number + 1;
 
+                    foreach (var itemVideoAdd in videoAdd)
+                    {
+                        string courseVideoID = string.Empty;
+                        if (itemVideoAdd.video != null)
+                        {
+                            (BinaryContent binaryContentVideo, int chunkSizeVideo) = Utility.ConvertIFromFileToBinary(itemVideoAdd.video);
+                            var uploadCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentVideo, chunkSizeVideo, null);
+
+                            var clipID = uploadCourseVideoResponse.ClipId.Value;
+                            VideoUpdateMetadata updateCourseVideo = new VideoUpdateMetadata
+                            {
+                                Name = itemVideoAdd.videoName
+                            };
+                            await _vimeoClient.UpdateVideoMetadataAsync(clipID, updateCourseVideo);
+
+                            await _vimeoClient.MoveVideoToFolder(folderID, clipID);
+
+                            courseVideoID = clipID.ToString();
+                        }
+
+                        TDCourseVideo courseVideo = new TDCourseVideo
+                        {
+                            ID = Guid.NewGuid(),
+                            Course_ID = new Guid(request.courseID),
+                            Course_Section_ID = new Guid(itemSection.courseSectionID),
+                            Video_ID = courseVideoID,
+                            Video_Name = itemVideoAdd.videoName,
+                            Video_Number = videoNumber,
+                            Create_By = "ADMIN",
+                            Create_Date = DateTime.Now
+                        };
+
+                        var insertVideoCourse = await _courseRepository.InsertTDCourseVideo(courseVideo);
+                        videoNumber++;
+                    }
+
+                    foreach (var itemVideoDelete in videoDelete)
+                    {
+                        var videoData = videoCourse.FirstOrDefault(s => s.ID.ToString() == itemVideoDelete.courseVideoID);
+
+                        if (videoData != null)
+                        {
+                            await _vimeoClient.DeleteVideoAsync(long.Parse(videoData.Video_ID));
+                            var deleteVideoResponse = await _courseRepository.DeleteCourseVideo(videoData.ID);
+                        }
+                    }
+
+                    foreach (var itemVideoEdit in videoEdit)
+                    {
+                        string courseVideoID = string.Empty;
+                        var videoData = videoCourse.FirstOrDefault(s => s.ID.ToString() == itemVideoEdit.courseVideoID);
+
+                        if (itemVideoEdit.video != null)
+                        {
+                            // Delete old video
+                            await _vimeoClient.DeleteVideoAsync(long.Parse(videoData.Video_ID));
+
+                            // Upload new video
+                            (BinaryContent binaryContentVideo, int chunkSizeVideo) = Utility.ConvertIFromFileToBinary(itemVideoEdit.video);
+                            var uploadCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentVideo, chunkSizeVideo, null);
+
+                            var clipID = uploadCourseVideoResponse.ClipId.Value;
+                            VideoUpdateMetadata updateCourseVideo = new VideoUpdateMetadata
+                            {
+                                Name = itemVideoEdit.videoName
+                            };
+                            await _vimeoClient.UpdateVideoMetadataAsync(clipID, updateCourseVideo);
+
+                            await _vimeoClient.MoveVideoToFolder(folderID, clipID);
+
+                            courseVideoID = clipID.ToString();
+                        }
+                        else
+                        {
+                            courseVideoID = videoData.Video_ID;
+                        }
+
+                        TDCourseVideo courseVideo = new TDCourseVideo
+                        {
+                            ID = videoData.ID,
+                            Course_ID = videoData.Course_ID,
+                            Course_Section_ID = videoData.Course_Section_ID,
+                            Video_ID = courseVideoID,
+                            Video_Name = itemVideoEdit.videoName,
+                            Video_Number = videoData.Video_Number,
+                            Update_By = "ADMIN",
+                            Update_Date = DateTime.Now
+                        };
+
+                        var updateVideoCourse = await _courseRepository.UpdateTDCourseVideo(courseVideo);
+                    }
+
+                    var sectionData = courseSection.FirstOrDefault(c => c.ID.ToString() == itemSection.courseSectionID);
+                    TDCourseSection updateCourseSection = new TDCourseSection
+                    {
+                        ID = sectionData.ID,
+                        Course_ID = sectionData.Course_ID,
+                        Section_Name = itemSection.sectionName,
+                        Section_Number = sectionData.Section_Number,
+                        Update_By = "ADMIN",
+                        Update_Date = DateTime.Now
+                    };
+
+                    var updateCourseSectionResponse = await _courseRepository.UpdateTDCourseSection(updateCourseSection);
+
+                }
+                #endregion
+                
                 response.data = new SaveCourseResult
                 {
-
+                    courseID = request.courseID
                 };
                 response.responseCode = "200";
                 response.responseMessage = "Success";
