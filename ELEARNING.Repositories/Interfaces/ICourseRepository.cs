@@ -18,7 +18,7 @@ namespace ELEARNING.Repositories.Interfaces
         Task<sp_update_course_section> UpdateTDCourseSection(TDCourseSection request);
         Task<sp_update_course_video> UpdateTDCourseVideo(TDCourseVideo request);
         Task<sp_delete_course> DeleteCourse(Guid courseID);
-        Task<sp_delete_course_section> DeleteCourseSection(Guid courseID);
-        Task<sp_delete_course_video> DeleteCourseVideo(Guid courseID);
+        Task<sp_delete_course_section> DeleteCourseSection(Guid courseSectionID);
+        Task<sp_delete_course_video> DeleteCourseVideo(Guid videoID);
     }
 }

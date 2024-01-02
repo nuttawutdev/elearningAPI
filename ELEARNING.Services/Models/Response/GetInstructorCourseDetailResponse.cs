@@ -35,5 +35,6 @@ namespace ELEARNING.Services.Models.Response
         public string courseVideoID { get; set; }
         public string videoName { get; set; }
         public string linkCourseVideo { get; set; }
+        public int videoNumber { get; set; }
     }
 }

@@ -84,6 +84,7 @@ namespace ELEARNING.Repositories.Repositories
                 queryParam.Add("@Course_Section_ID", request.Course_Section_ID);
                 queryParam.Add("@Video_Name", request.Video_Name);
                 queryParam.Add("@Video_ID", request.Video_ID);
+                queryParam.Add("@Video_Number", request.Video_Number);
                 queryParam.Add("@Create_By", request.Create_By);
                 queryParam.Add("@Create_Date", request.Create_Date);
 
