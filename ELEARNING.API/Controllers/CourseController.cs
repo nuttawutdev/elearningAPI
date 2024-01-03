@@ -81,7 +81,7 @@ namespace ELEARNING.API.Controllers
         [HttpPost]
         [Route("course/v1/get-my-course-detail")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetMyCourseDetailResponse))]
-        public async Task<IActionResult> GetMyCourseDetail(GetMyCourseDetailRequest request)
+        public async Task<IActionResult> GetMyCourseDetail([FromBody] GetMyCourseDetailRequest request)
         {
             var response = new GetMyCourseDetailResponse();
             try
@@ -100,12 +100,31 @@ namespace ELEARNING.API.Controllers
         [HttpPost]
         [Route("course/v1/get-instructor-course-detail")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetInstructorCourseDetailResponse))]
-        public async Task<IActionResult> GetInstructorCourseDetail(GetMyCourseDetailRequest request)
+        public async Task<IActionResult> GetInstructorCourseDetail([FromBody] GetMyCourseDetailRequest request)
         {
             var response = new GetInstructorCourseDetailResponse();
             try
             {
                 response = await _courseService.GetInstructorCourseDetail(request);
+            }
+            catch (System.Exception ex)
+            {
+                response.data = null;
+                response.responseCode = ResponseCode.InternalError.Text();
+                response.responseMessage = "เกิดข้อผิดพลาดในระบบ";
+            };
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [Route("course/v1/get-all-course-instructor")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetAllCourseInstructorResponse))]
+        public async Task<IActionResult> GetAllCourseInstructor([FromBody] GetAllCourseInstructorRequest request)
+        {
+            var response = new GetAllCourseInstructorResponse();
+            try
+            {
+                response = await _courseService.GetAllCourseInstructor(request);
             }
             catch (System.Exception ex)
             {

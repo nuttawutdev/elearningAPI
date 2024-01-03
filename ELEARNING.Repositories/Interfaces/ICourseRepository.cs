@@ -20,5 +20,6 @@ namespace ELEARNING.Repositories.Interfaces
         Task<sp_delete_course> DeleteCourse(Guid courseID);
         Task<sp_delete_course_section> DeleteCourseSection(Guid courseSectionID);
         Task<sp_delete_course_video> DeleteCourseVideo(Guid videoID);
+        Task<List<sp_get_all_course_instructor>> GetAllCourseInstructor(string userID);
     }
 }

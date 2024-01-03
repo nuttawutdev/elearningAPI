@@ -714,5 +714,50 @@ namespace ELEARNING.Services.Services
 
             return response;
         }
+
+        public async Task<GetAllCourseInstructorResponse> GetAllCourseInstructor(GetAllCourseInstructorRequest request)
+        {
+            GetAllCourseInstructorResponse response = new GetAllCourseInstructorResponse();
+
+            try
+            {
+                request.userID = "ADMIN";
+                var allCourseInstructor = await _courseRepository.GetAllCourseInstructor(request.userID);
+
+                if (allCourseInstructor.Any())
+                {
+                    if (request.period != null && request.period.ToLower() != "all")
+                    {
+                        int periodValue = int.Parse(request.period);
+                        DateTime dateNow = DateTime.Now.Date;
+                        var dateFrom = dateNow.AddDays(-periodValue);
+                        var dateTo = dateNow.AddDays(1).AddMilliseconds(-100);
+
+                        allCourseInstructor = allCourseInstructor.Where(d => d.Create_Date >= dateFrom && d.Create_Date <= dateTo).ToList();
+                    }
+
+                    response.data = allCourseInstructor.Select(c => new CourseInstructorData
+                    {
+                        courseID = c.ID.ToString(),
+                        courseName = c.Course_Name,
+                        createBy = c.Create_By,
+                        price = c.Price,
+                        createDate = c.Create_Date.ToString("dd/MM/yyyy")
+                    }).ToList();
+                }
+                else
+                {
+                    response.responseCode = "404";
+                    response.responseMessage = "ไม่พบข้อมูล";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
+            }
+
+            return response;
+        }
     }
 }

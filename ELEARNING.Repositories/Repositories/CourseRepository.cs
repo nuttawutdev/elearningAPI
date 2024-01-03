@@ -316,5 +316,24 @@ namespace ELEARNING.Repositories.Repositories
             }
         }
 
+        public async Task<List<sp_get_all_course_instructor>> GetAllCourseInstructor(string userID)
+        {
+            try
+            {
+                string store = "sp_get_all_course_instructor";
+                var queryParam = new DynamicParameters();
+                queryParam.Add("@UserID", userID);
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<sp_get_all_course_instructor>(store, queryParam, commandType: System.Data.CommandType.StoredProcedure);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }
