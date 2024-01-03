@@ -80,7 +80,7 @@ namespace ELEARNING.Services.Services
                     {
                         BinaryContent binaryContentCover = new BinaryContent(request.coverImageVideo.OpenReadStream(), request.coverImageVideo.ContentType);
                         var uploadCoverResponse = await _vimeoClient.UploadThumbnailAsync(introductionCourseClipID, binaryContentCover);
-                        uploadCoverUri = uploadCoverResponse.Link;
+                        uploadCoverUri = uploadCoverResponse.Uri;
                     }
 
                     VideoUpdateMetadata updateVideo = new VideoUpdateMetadata
@@ -234,7 +234,7 @@ namespace ELEARNING.Services.Services
                 {
                     BinaryContent binaryContentCover = new BinaryContent(request.coverImageVideo.OpenReadStream(), request.coverImageVideo.ContentType);
                     var uploadCoverResponse = await _vimeoClient.UploadThumbnailAsync(introductionCourseClipID, binaryContentCover);
-                    uploadCoverUri = uploadCoverResponse.Link;
+                    uploadCoverUri = uploadCoverResponse.Uri;
                 }
                 else
                 {
@@ -326,7 +326,7 @@ namespace ELEARNING.Services.Services
                 #region Delete Section
                 foreach (var itemSection in sectionDelete)
                 {
-                    var videoInSection = videoCourse.Where(s => s.Course_Section_ID.ToString() == itemSection.courseSectionID);
+                    var videoInSection = videoCourse.Where(s => s.Course_Section_ID.ToString() == itemSection.courseSectionID.ToLower());
                     foreach (var itemVideoSection in videoInSection)
                     {
                         await _vimeoClient.DeleteVideoAsync(long.Parse(itemVideoSection.Video_ID));
@@ -384,7 +384,7 @@ namespace ELEARNING.Services.Services
 
                     foreach (var itemVideoDelete in videoDelete)
                     {
-                        var videoData = videoCourse.FirstOrDefault(s => s.ID.ToString() == itemVideoDelete.courseVideoID);
+                        var videoData = videoCourse.FirstOrDefault(s => s.ID.ToString() == itemVideoDelete.courseVideoID.ToLower());
 
                         if (videoData != null)
                         {
@@ -396,7 +396,7 @@ namespace ELEARNING.Services.Services
                     foreach (var itemVideoEdit in videoEdit)
                     {
                         string courseVideoID = string.Empty;
-                        var videoData = videoCourse.FirstOrDefault(s => s.ID.ToString() == itemVideoEdit.courseVideoID);
+                        var videoData = videoCourse.FirstOrDefault(s => s.ID.ToString() == itemVideoEdit.courseVideoID.ToLower());
 
                         if (itemVideoEdit.video != null)
                         {
@@ -438,7 +438,7 @@ namespace ELEARNING.Services.Services
                         var updateVideoCourse = await _courseRepository.UpdateTDCourseVideo(courseVideo);
                     }
 
-                    var sectionData = courseSection.FirstOrDefault(c => c.ID.ToString() == itemSection.courseSectionID);
+                    var sectionData = courseSection.FirstOrDefault(c => c.ID.ToString() == itemSection.courseSectionID.ToLower());
                     TDCourseSection updateCourseSection = new TDCourseSection
                     {
                         ID = sectionData.ID,
@@ -453,7 +453,7 @@ namespace ELEARNING.Services.Services
 
                 }
                 #endregion
-                
+
                 response.data = new SaveCourseResult
                 {
                     courseID = request.courseID
