@@ -184,6 +184,15 @@ namespace ELEARNING.Services.Services
 
             try
             {
+                var courseDetail = await _courseRepository.GetCourseByID(new Guid(request.courseID));
+
+                if (courseDetail == null)
+                {
+                    response.responseCode = "404";
+                    response.responseMessage = "ไม่พบข้อมูล";
+                    return response;
+                }
+
                 var folder = await _vimeoClient.GetUserFolders(UserId.Me.Id, null, null);
                 long folderID = 0;
                 if (!folder.Data.Exists(c => c.Name == "FOLDER TEST"))
@@ -196,7 +205,6 @@ namespace ELEARNING.Services.Services
                     folderID = folder.Data.FirstOrDefault(c => c.Name == "FOLDER TEST").Id.Value;
                 }
 
-                var courseDetail = await _courseRepository.GetCourseByID(new Guid(request.courseID));
                 string introductionCourseVideoID = string.Empty;
                 string uploadCoverUri = string.Empty;
                 long.TryParse(courseDetail.Video_ID, out long introductionCourseClipID);
@@ -204,7 +212,11 @@ namespace ELEARNING.Services.Services
                 #region Update Introduction Course
                 if (request.introductionCourseVideo != null)
                 {
-                    await _vimeoClient.DeleteVideoAsync(introductionCourseClipID);
+                    if (introductionCourseClipID != 0)
+                    {
+                        await _vimeoClient.DeleteVideoAsync(introductionCourseClipID);
+                    }
+
                     (BinaryContent binaryContentIntroductionCourseVideo, int chunkSize) = Utility.ConvertIFromFileToBinary(request.introductionCourseVideo);
                     var uploadIntroductionCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentIntroductionCourseVideo, chunkSize, null);
 
@@ -235,7 +247,7 @@ namespace ELEARNING.Services.Services
                 #endregion
 
                 #region Update Cover Image
-                if (request.coverImageVideo != null)
+                if (request.coverImageVideo != null && introductionCourseClipID != 0)
                 {
                     BinaryContent binaryContentCover = new BinaryContent(request.coverImageVideo.OpenReadStream(), request.coverImageVideo.ContentType);
                     var uploadCoverResponse = await _vimeoClient.UploadThumbnailAsync(introductionCourseClipID, binaryContentCover);
@@ -290,43 +302,46 @@ namespace ELEARNING.Services.Services
                     };
 
                     var insertCourseSectionResponse = await _courseRepository.InsertTDCourseSection(insertCourseSection);
-
                     sectionNumber++;
-                    foreach (var itemVideo in itemSection.videoList)
+
+                    if (itemSection.videoList != null)
                     {
-                        int videoNumber = 1;
-                        string courseVideoID = string.Empty;
-                        if (itemVideo.video != null)
+                        foreach (var itemVideo in itemSection.videoList)
                         {
-                            (BinaryContent binaryContentVideo, int chunkSizeVideo) = Utility.ConvertIFromFileToBinary(itemVideo.video);
-                            var uploadCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentVideo, chunkSizeVideo, null);
-
-                            var clipID = uploadCourseVideoResponse.ClipId.Value;
-                            VideoUpdateMetadata updateCourseVideo = new VideoUpdateMetadata
+                            int videoNumber = 1;
+                            string courseVideoID = string.Empty;
+                            if (itemVideo.video != null)
                             {
-                                Name = itemVideo.videoName
+                                (BinaryContent binaryContentVideo, int chunkSizeVideo) = Utility.ConvertIFromFileToBinary(itemVideo.video);
+                                var uploadCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentVideo, chunkSizeVideo, null);
+
+                                var clipID = uploadCourseVideoResponse.ClipId.Value;
+                                VideoUpdateMetadata updateCourseVideo = new VideoUpdateMetadata
+                                {
+                                    Name = itemVideo.videoName
+                                };
+                                await _vimeoClient.UpdateVideoMetadataAsync(clipID, updateCourseVideo);
+
+                                await _vimeoClient.MoveVideoToFolder(folderID, clipID);
+
+                                courseVideoID = clipID.ToString();
+                            }
+
+                            TDCourseVideo courseVideo = new TDCourseVideo
+                            {
+                                ID = Guid.NewGuid(),
+                                Course_ID = new Guid(request.courseID),
+                                Course_Section_ID = insertCourseSection.ID,
+                                Video_ID = courseVideoID,
+                                Video_Name = itemVideo.videoName,
+                                Video_Number = videoNumber,
+                                Create_By = "ADMIN",
+                                Create_Date = DateTime.Now
                             };
-                            await _vimeoClient.UpdateVideoMetadataAsync(clipID, updateCourseVideo);
 
-                            await _vimeoClient.MoveVideoToFolder(folderID, clipID);
-
-                            courseVideoID = clipID.ToString();
+                            var insertVideoCourse = await _courseRepository.InsertTDCourseVideo(courseVideo);
+                            videoNumber++;
                         }
-
-                        TDCourseVideo courseVideo = new TDCourseVideo
-                        {
-                            ID = Guid.NewGuid(),
-                            Course_ID = new Guid(request.courseID),
-                            Course_Section_ID = insertCourseSection.ID,
-                            Video_ID = courseVideoID,
-                            Video_Name = itemVideo.videoName,
-                            Video_Number = videoNumber,
-                            Create_By = "ADMIN",
-                            Create_Date = DateTime.Now
-                        };
-
-                        var insertVideoCourse = await _courseRepository.InsertTDCourseVideo(courseVideo);
-                        videoNumber++;
                     }
 
                 }
@@ -355,6 +370,11 @@ namespace ELEARNING.Services.Services
                 {
                     var videoCourseInSection = videoCourse.Where(d => d.Course_Section_ID == new Guid(itemSection.courseSectionID));
                     var lastedVideoInSection = videoCourseInSection.OrderByDescending(d => d.Video_Number).FirstOrDefault();
+                    int videoNumber = 1;
+                    if (lastedVideoInSection != null)
+                    {
+                        videoNumber = lastedVideoInSection.Video_Number + 1;
+                    }
 
                     if (itemSection.videoList == null)
                     {
@@ -367,7 +387,7 @@ namespace ELEARNING.Services.Services
                     // var videoDelete = itemSection.videoList.Where(c => c.action == "delete");
                     var videoAdd = itemSection.videoList.Where(c => c.action == "add");
                     var videoEdit = itemSection.videoList.Where(c => c.action == "edit" || string.IsNullOrWhiteSpace(c.action));
-                    int videoNumber = lastedVideoInSection.Video_Number + 1;
+
 
                     foreach (var itemVideoAdd in videoAdd)
                     {
@@ -424,6 +444,7 @@ namespace ELEARNING.Services.Services
                         string courseVideoID = string.Empty;
                         var videoData = videoCourseInSection.FirstOrDefault(s => s.ID.ToString() == itemVideoEdit.courseVideoID.ToLower());
 
+                        // Update Video
                         if (itemVideoEdit.video != null)
                         {
                             // Delete old video
@@ -449,6 +470,7 @@ namespace ELEARNING.Services.Services
                         }
                         else
                         {
+                            // Update เฉพาะชื่อ Video
                             long.TryParse(videoData.Video_ID, out long courseClipID);
                             if (courseClipID != 0)
                             {
