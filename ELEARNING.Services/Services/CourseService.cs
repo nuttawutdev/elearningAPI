@@ -108,9 +108,9 @@ namespace ELEARNING.Services.Services
 
                 var insertCourseResponse = await _courseRepository.InsertTHCourse(insertCourse);
 
+                int sectionNumber = 1;
                 foreach (var itemSection in request.sectionVideo)
                 {
-                    int sectionNumber = 1;
                     TDCourseSection courseSection = new TDCourseSection
                     {
                         ID = Guid.NewGuid(),
@@ -124,9 +124,9 @@ namespace ELEARNING.Services.Services
                     var insertCourseSectionResponse = await _courseRepository.InsertTDCourseSection(courseSection);
 
                     sectionNumber++;
+                    int videoNumber = 1;
                     foreach (var itemVideo in itemSection.videoList)
                     {
-                        int videoNumber = 1;
                         string courseVideoID = string.Empty;
                         if (itemVideo.video != null)
                         {
@@ -199,7 +199,7 @@ namespace ELEARNING.Services.Services
                 var courseDetail = await _courseRepository.GetCourseByID(new Guid(request.courseID));
                 string introductionCourseVideoID = string.Empty;
                 string uploadCoverUri = string.Empty;
-                long introductionCourseClipID = long.Parse(courseDetail.Video_ID);
+                long.TryParse(courseDetail.Video_ID, out long introductionCourseClipID);
 
                 #region Update Introduction Course
                 if (request.introductionCourseVideo != null)
@@ -221,11 +221,16 @@ namespace ELEARNING.Services.Services
                 else
                 {
                     introductionCourseVideoID = courseDetail.Video_ID;
-                    VideoUpdateMetadata updateVideo = new VideoUpdateMetadata
+
+                    if (!string.IsNullOrWhiteSpace(introductionCourseVideoID))
                     {
-                        Name = request.courseName
-                    };
-                    await _vimeoClient.UpdateVideoMetadataAsync(introductionCourseClipID, updateVideo);
+                        VideoUpdateMetadata updateVideo = new VideoUpdateMetadata
+                        {
+                            Name = request.courseName
+                        };
+                        await _vimeoClient.UpdateVideoMetadataAsync(introductionCourseClipID, updateVideo);
+                    }
+
                 }
                 #endregion
 
@@ -259,14 +264,18 @@ namespace ELEARNING.Services.Services
 
                 var updateCourseResponse = await _courseRepository.UpdateTHCourse(updateCourse);
 
-                var sectionDelete = request.sectionVideo.Where(c => c.action == "delete");
-                var sectionAdd = request.sectionVideo.Where(c => c.action == "add");
-                var sectionEdit = request.sectionVideo.Where(c => c.action == "edit" || string.IsNullOrWhiteSpace(c.action));
-                var courseSection = await _courseRepository.GetCourseSection(new Guid(request.courseID));
+                var currentCourseSection = await _courseRepository.GetCourseSection(new Guid(request.courseID));
                 var videoCourse = await _courseRepository.GetCourseVideo(new Guid(request.courseID));
 
+                var sectionIDUpdate = request.sectionVideo.Where(d => !string.IsNullOrWhiteSpace(d.courseSectionID)).Select(c => c.courseSectionID.ToLower()).ToList();
+                var sectionDelete = currentCourseSection.Where(d => !sectionIDUpdate.Contains(d.ID.ToString()));
+                //var sectionDelete = request.sectionVideo.Where(c => c.action == "delete");
+                var sectionAdd = request.sectionVideo.Where(c => c.action == "add");
+                var sectionEdit = request.sectionVideo.Where(c => c.action == "edit" || string.IsNullOrWhiteSpace(c.action));
+
+
                 #region Insert New Section
-                var lastedSection = courseSection.OrderByDescending(d => d.Section_Number).FirstOrDefault();
+                var lastedSection = currentCourseSection.OrderByDescending(d => d.Section_Number).FirstOrDefault();
                 int sectionNumber = lastedSection.Section_Number + 1;
                 foreach (var itemSection in sectionAdd)
                 {
@@ -326,22 +335,36 @@ namespace ELEARNING.Services.Services
                 #region Delete Section
                 foreach (var itemSection in sectionDelete)
                 {
-                    var videoInSection = videoCourse.Where(s => s.Course_Section_ID.ToString() == itemSection.courseSectionID.ToLower());
+                    var videoInSection = videoCourse.Where(s => s.Course_Section_ID == itemSection.ID);
                     foreach (var itemVideoSection in videoInSection)
                     {
-                        await _vimeoClient.DeleteVideoAsync(long.Parse(itemVideoSection.Video_ID));
+                        if (!string.IsNullOrWhiteSpace(itemVideoSection.Video_ID))
+                        {
+                            await _vimeoClient.DeleteVideoAsync(long.Parse(itemVideoSection.Video_ID));
+                        }
+
                         var deleteVideoResponse = await _courseRepository.DeleteCourseVideo(itemVideoSection.ID);
                     }
 
-                    var deleteSection = await _courseRepository.DeleteCourseSection(new Guid(itemSection.courseSectionID));
+                    var deleteSection = await _courseRepository.DeleteCourseSection(itemSection.ID);
                 }
                 #endregion
 
                 #region Update Section
                 foreach (var itemSection in sectionEdit)
                 {
-                    var lastedVideoInSection = videoCourse.OrderByDescending(d => d.Video_Number).FirstOrDefault();
-                    var videoDelete = itemSection.videoList.Where(c => c.action == "delete");
+                    var videoCourseInSection = videoCourse.Where(d => d.Course_Section_ID == new Guid(itemSection.courseSectionID));
+                    var lastedVideoInSection = videoCourseInSection.OrderByDescending(d => d.Video_Number).FirstOrDefault();
+
+                    if (itemSection.videoList == null)
+                    {
+                        itemSection.videoList = new System.Collections.Generic.List<CourseVideoRequest>();
+                    }
+
+                    var videoIDUpdate = itemSection.videoList.Where(d => !string.IsNullOrWhiteSpace(d.courseVideoID)).Select(c => c.courseVideoID.ToLower()).ToList();
+                    var videoDelete = videoCourseInSection.Where(d => !videoIDUpdate.Contains(d.ID.ToString()));
+
+                    // var videoDelete = itemSection.videoList.Where(c => c.action == "delete");
                     var videoAdd = itemSection.videoList.Where(c => c.action == "add");
                     var videoEdit = itemSection.videoList.Where(c => c.action == "edit" || string.IsNullOrWhiteSpace(c.action));
                     int videoNumber = lastedVideoInSection.Video_Number + 1;
@@ -384,11 +407,14 @@ namespace ELEARNING.Services.Services
 
                     foreach (var itemVideoDelete in videoDelete)
                     {
-                        var videoData = videoCourse.FirstOrDefault(s => s.ID.ToString() == itemVideoDelete.courseVideoID.ToLower());
+                        var videoData = videoCourseInSection.FirstOrDefault(s => s.ID == itemVideoDelete.ID);
 
                         if (videoData != null)
                         {
-                            await _vimeoClient.DeleteVideoAsync(long.Parse(videoData.Video_ID));
+                            if (!string.IsNullOrWhiteSpace(videoData.Video_ID))
+                            {
+                                await _vimeoClient.DeleteVideoAsync(long.Parse(videoData.Video_ID));
+                            }
                             var deleteVideoResponse = await _courseRepository.DeleteCourseVideo(videoData.ID);
                         }
                     }
@@ -396,12 +422,15 @@ namespace ELEARNING.Services.Services
                     foreach (var itemVideoEdit in videoEdit)
                     {
                         string courseVideoID = string.Empty;
-                        var videoData = videoCourse.FirstOrDefault(s => s.ID.ToString() == itemVideoEdit.courseVideoID.ToLower());
+                        var videoData = videoCourseInSection.FirstOrDefault(s => s.ID.ToString() == itemVideoEdit.courseVideoID.ToLower());
 
                         if (itemVideoEdit.video != null)
                         {
                             // Delete old video
-                            await _vimeoClient.DeleteVideoAsync(long.Parse(videoData.Video_ID));
+                            if (string.IsNullOrWhiteSpace(videoData.Video_ID))
+                            {
+                                await _vimeoClient.DeleteVideoAsync(long.Parse(videoData.Video_ID));
+                            }
 
                             // Upload new video
                             (BinaryContent binaryContentVideo, int chunkSizeVideo) = Utility.ConvertIFromFileToBinary(itemVideoEdit.video);
@@ -420,6 +449,15 @@ namespace ELEARNING.Services.Services
                         }
                         else
                         {
+                            long.TryParse(videoData.Video_ID, out long courseClipID);
+                            if (courseClipID != 0)
+                            {
+                                VideoUpdateMetadata updateVideo = new VideoUpdateMetadata
+                                {
+                                    Name = itemVideoEdit.videoName
+                                };
+                                await _vimeoClient.UpdateVideoMetadataAsync(courseClipID, updateVideo);
+                            }
                             courseVideoID = videoData.Video_ID;
                         }
 
@@ -438,7 +476,7 @@ namespace ELEARNING.Services.Services
                         var updateVideoCourse = await _courseRepository.UpdateTDCourseVideo(courseVideo);
                     }
 
-                    var sectionData = courseSection.FirstOrDefault(c => c.ID.ToString() == itemSection.courseSectionID.ToLower());
+                    var sectionData = currentCourseSection.FirstOrDefault(c => c.ID.ToString() == itemSection.courseSectionID.ToLower());
                     TDCourseSection updateCourseSection = new TDCourseSection
                     {
                         ID = sectionData.ID,
