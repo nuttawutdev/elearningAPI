@@ -124,41 +124,45 @@ namespace ELEARNING.Services.Services
                     var insertCourseSectionResponse = await _courseRepository.InsertTDCourseSection(courseSection);
 
                     sectionNumber++;
-                    int videoNumber = 1;
-                    foreach (var itemVideo in itemSection.videoList)
+
+                    if (itemSection.videoList != null)
                     {
-                        string courseVideoID = string.Empty;
-                        if (itemVideo.video != null)
+                        int videoNumber = 1;
+                        foreach (var itemVideo in itemSection.videoList)
                         {
-                            (BinaryContent binaryContentVideo, int chunkSizeVideo) = Utility.ConvertIFromFileToBinary(itemVideo.video);
-                            var uploadCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentVideo, chunkSizeVideo, null);
-
-                            var clipID = uploadCourseVideoResponse.ClipId.Value;
-                            VideoUpdateMetadata updateCourseVideo = new VideoUpdateMetadata
+                            string courseVideoID = string.Empty;
+                            if (itemVideo.video != null)
                             {
-                                Name = itemVideo.videoName
+                                (BinaryContent binaryContentVideo, int chunkSizeVideo) = Utility.ConvertIFromFileToBinary(itemVideo.video);
+                                var uploadCourseVideoResponse = await _vimeoClient.UploadEntireFileAsync(binaryContentVideo, chunkSizeVideo, null);
+
+                                var clipID = uploadCourseVideoResponse.ClipId.Value;
+                                VideoUpdateMetadata updateCourseVideo = new VideoUpdateMetadata
+                                {
+                                    Name = itemVideo.videoName
+                                };
+                                await _vimeoClient.UpdateVideoMetadataAsync(clipID, updateCourseVideo);
+
+                                await _vimeoClient.MoveVideoToFolder(folderID, clipID);
+
+                                courseVideoID = clipID.ToString();
+                            }
+
+                            TDCourseVideo courseVideo = new TDCourseVideo
+                            {
+                                ID = Guid.NewGuid(),
+                                Course_ID = insertCourse.ID,
+                                Course_Section_ID = courseSection.ID,
+                                Video_ID = courseVideoID,
+                                Video_Name = itemVideo.videoName,
+                                Video_Number = videoNumber,
+                                Create_By = "ADMIN",
+                                Create_Date = DateTime.Now
                             };
-                            await _vimeoClient.UpdateVideoMetadataAsync(clipID, updateCourseVideo);
 
-                            await _vimeoClient.MoveVideoToFolder(folderID, clipID);
-
-                            courseVideoID = clipID.ToString();
+                            var insertVideoCourse = await _courseRepository.InsertTDCourseVideo(courseVideo);
+                            videoNumber++;
                         }
-
-                        TDCourseVideo courseVideo = new TDCourseVideo
-                        {
-                            ID = Guid.NewGuid(),
-                            Course_ID = insertCourse.ID,
-                            Course_Section_ID = courseSection.ID,
-                            Video_ID = courseVideoID,
-                            Video_Name = itemVideo.videoName,
-                            Video_Number = videoNumber,
-                            Create_By = "ADMIN",
-                            Create_Date = DateTime.Now
-                        };
-
-                        var insertVideoCourse = await _courseRepository.InsertTDCourseVideo(courseVideo);
-                        videoNumber++;
                     }
 
                 }
@@ -306,9 +310,9 @@ namespace ELEARNING.Services.Services
 
                     if (itemSection.videoList != null)
                     {
+                        int videoNumber = 1;
                         foreach (var itemVideo in itemSection.videoList)
                         {
-                            int videoNumber = 1;
                             string courseVideoID = string.Empty;
                             if (itemVideo.video != null)
                             {
