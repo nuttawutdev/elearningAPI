@@ -549,7 +549,7 @@ namespace ELEARNING.Services.Services
                         price = getCourseByIDResponse.Price,
                         secondCourseName = getCourseByIDResponse.Second_Course_Name,
                         remark = getCourseByIDResponse.Remark,
-                        courseSection = getCourseSectionResponse.Select(c => new CourseSection
+                        courseSection = getCourseSectionResponse.OrderBy(d => d.Section_Number).Select(c => new CourseSection
                         {
                             sectionNumber = c.Section_Number,
                             sectionName = c.Section_Name
@@ -614,12 +614,12 @@ namespace ELEARNING.Services.Services
                         secondCourseName = getCourseByIDResponse.Second_Course_Name,
                         price = getCourseByIDResponse.Price,
                         remark = getCourseByIDResponse.Remark,
-                        courseSection = getCourseSectionResponse.Select(c => new InstructorCourseSection
+                        courseSection = getCourseSectionResponse.OrderBy(d => d.Section_Number).Select(c => new InstructorCourseSection
                         {
                             courseSectionID = c.ID.ToString(),
                             sectionNumber = c.Section_Number,
                             sectionName = c.Section_Name,
-                            courseVideo = getCourseVideoResponse.Where(v => v.Course_Section_ID == c.ID).Select(d => new InstructorCourseVideo
+                            courseVideo = getCourseVideoResponse.Where(v => v.Course_Section_ID == c.ID).OrderBy(x => x.Video_Number).Select(d => new InstructorCourseVideo
                             {
                                 courseVideoID = d.ID.ToString(),
                                 videoName = d.Video_Name,
@@ -684,12 +684,12 @@ namespace ELEARNING.Services.Services
                         linkCourseIntroductionVideo = allVideoFromFolder?.Data.FirstOrDefault(c => c.Id.ToString() == getCourseByIDResponse.Video_ID)?.Player_Embed_Url,
                         secondCourseName = getCourseByIDResponse.Second_Course_Name,
                         remark = getCourseByIDResponse.Remark,
-                        courseSection = getCourseSectionResponse.Select(c => new MyCourseSection
+                        courseSection = getCourseSectionResponse.OrderBy(d => d.Section_Number).Select(c => new MyCourseSection
                         {
                             courseSectionID = c.ID.ToString(),
                             sectionNumber = c.Section_Number,
                             sectionName = c.Section_Name,
-                            courseVideo = getCourseVideoResponse.Where(v => v.Course_Section_ID == c.ID).Select(d => new MyCourseVideo
+                            courseVideo = getCourseVideoResponse.Where(v => v.Course_Section_ID == c.ID).OrderBy(x => x.Video_Number).Select(d => new MyCourseVideo
                             {
                                 videoName = d.Video_Name,
                                 videoNumber = d.Video_Number,
@@ -744,6 +744,8 @@ namespace ELEARNING.Services.Services
                         price = c.Price,
                         createDate = c.Create_Date.ToString("dd/MM/yyyy")
                     }).ToList();
+                    response.responseCode = "200";
+                    response.responseMessage = "Success";
                 }
                 else
                 {
