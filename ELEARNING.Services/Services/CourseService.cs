@@ -806,6 +806,7 @@ namespace ELEARNING.Services.Services
                         courseName = c.Course_Name,
                         createBy = c.Create_By,
                         price = c.Price,
+                        status = "Active",
                         createDate = c.Create_Date.ToString("dd/MM/yyyy")
                     }).ToList();
                     response.responseCode = "200";
