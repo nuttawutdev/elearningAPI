@@ -826,5 +826,118 @@ namespace ELEARNING.Services.Services
 
             return response;
         }
+
+        public async Task<DeleteCourseResponse> DeleteCourse(DeleteCourseRequest request)
+        {
+            DeleteCourseResponse response = new DeleteCourseResponse();
+
+            try
+            {
+                var courseDetail = await _courseRepository.GetCourseByID(new Guid(request.courseID));
+
+                if (courseDetail == null)
+                {
+                    response.responseCode = "404";
+                    response.responseMessage = "ไม่พบข้อมูล";
+                    return response;
+                }
+
+                var sectionDelete = await _courseRepository.GetCourseSection(new Guid(request.courseID));
+                var videoCourse = await _courseRepository.GetCourseVideo(new Guid(request.courseID));
+
+
+                #region Delete Section
+                foreach (var itemSection in sectionDelete)
+                {
+                    var videoInSection = videoCourse.Where(s => s.Course_Section_ID == itemSection.ID);
+                    foreach (var itemVideoSection in videoInSection)
+                    {
+                        if (!string.IsNullOrWhiteSpace(itemVideoSection.Video_ID))
+                        {
+                            await _vimeoClient.DeleteVideoAsync(long.Parse(itemVideoSection.Video_ID));
+                        }
+
+                        var deleteVideoResponse = await _courseRepository.DeleteCourseVideo(itemVideoSection.ID);
+                    }
+
+                    var deleteSection = await _courseRepository.DeleteCourseSection(itemSection.ID);
+                }
+                #endregion
+
+                if (!string.IsNullOrWhiteSpace(courseDetail.Video_ID))
+                {
+                    await _vimeoClient.DeleteVideoAsync(long.Parse(courseDetail.Video_ID));
+                }
+                
+                var deleteCourseResponse = await _courseRepository.DeleteCourse(courseDetail.ID);
+
+                response.data = true;
+                response.responseCode = "200";
+                response.responseMessage = "Success";
+            }
+            catch (Exception ex)
+            {
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<GetAllCourseResponse> GetAllMyCourse(GetAllMyCourseRequest request)
+        {
+            GetAllCourseResponse response = new GetAllCourseResponse();
+
+            try
+            {
+                var getAllCourseResponse = await _courseRepository.GetCourse();
+                if (getAllCourseResponse.Any())
+                {
+                    getAllCourseResponse = getAllCourseResponse.Skip((request.pageNo - 1) * request.pageSize)
+                                            .Take(request.pageSize).ToList();
+
+                    if (getAllCourseResponse.Any())
+                    {
+                        var allVideo = await _vimeoClient.GetVideosAsync(UserId.Me.Id, null, null);
+                        if (allVideo != null && allVideo.Data.Any())
+                        {
+                            var videoData = allVideo.Data;
+                            response.data = getAllCourseResponse.Select(c => new CourseData
+                            {
+                                courseID = c.ID.ToString(),
+                                courseName = c.Course_Name,
+                                createBy = c.Create_By,
+                                price = c.Price,
+                                linkCoverCourseVideo = videoData.FirstOrDefault(x => x.Id.ToString() == c.Video_ID)?.Pictures?.Link
+                            }).ToList();
+                            response.responseCode = "200";
+                            response.responseMessage = "Success";
+                        }
+                        else
+                        {
+                            response.responseCode = "404";
+                            response.responseMessage = "ไม่พบข้อมูล";
+                        }
+                    }
+                    else
+                    {
+                        response.responseCode = "404";
+                        response.responseMessage = "ไม่พบข้อมูล";
+                    }
+
+                }
+                else
+                {
+                    response.responseCode = "404";
+                    response.responseMessage = "ไม่พบข้อมูล";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.responseCode = "501";
+                response.responseMessage = ex.Message;
+            }
+
+            return response;
+        }
     }
 }

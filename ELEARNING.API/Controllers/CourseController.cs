@@ -135,6 +135,43 @@ namespace ELEARNING.API.Controllers
             return Ok(response);
         }
 
+        [HttpPost]
+        [Route("course/v1/get-all-my-course")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetAllCourseResponse))]
+        public async Task<IActionResult> GetAllMyCourse([FromBody] GetAllMyCourseRequest request)
+        {
+            var response = new GetAllCourseResponse();
+            try
+            {
+                response = await _courseService.GetAllMyCourse(request);
+            }
+            catch (System.Exception ex)
+            {
+                response.data = null;
+                response.responseCode = ResponseCode.InternalError.Text();
+                response.responseMessage = "เกิดข้อผิดพลาดในระบบ";
+            };
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [DisableRequestSizeLimit]
+        [Route("course/v1/delete-course")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteCourseResponse))]
+        public async Task<IActionResult> DeleteCourse([FromForm] DeleteCourseRequest request)
+        {
+            var response = new DeleteCourseResponse();
+            try
+            {
+                response = await _courseService.DeleteCourse(request);
+            }
+            catch (System.Exception ex)
+            {
+                response.responseCode = ResponseCode.InternalError.Text();
+                response.responseMessage = "เกิดข้อผิดพลาดในระบบ";
+            };
+            return Ok(response);
+        }
 
     }
 }

@@ -13,5 +13,7 @@ namespace ELEARNING.Services.Interfaces
         Task<GetMyCourseDetailResponse> GetMyCourseDetail(GetMyCourseDetailRequest request);
         Task<GetInstructorCourseDetailResponse> GetInstructorCourseDetail(GetMyCourseDetailRequest request);
         Task<GetAllCourseInstructorResponse> GetAllCourseInstructor(GetAllCourseInstructorRequest request);
+        Task<DeleteCourseResponse> DeleteCourse(DeleteCourseRequest request);
+        Task<GetAllCourseResponse> GetAllMyCourse(GetAllMyCourseRequest request);
     }
 }
