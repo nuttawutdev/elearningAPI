@@ -27,11 +27,19 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddResponseCompression();
 builder.Services.AddServices(builder.Configuration);
+
+builder.Services.AddCors(o => o.AddPolicy("Policy", builder =>
+{
+    builder.AllowAnyOrigin()
+           .AllowAnyMethod()
+           .AllowAnyHeader();
+}));
+
 var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.MapControllers();
-
+app.UseCors("Policy");
 app.Run();
