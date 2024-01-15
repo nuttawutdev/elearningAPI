@@ -158,7 +158,7 @@ namespace ELEARNING.API.Controllers
         [DisableRequestSizeLimit]
         [Route("course/v1/delete-course")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DeleteCourseResponse))]
-        public async Task<IActionResult> DeleteCourse([FromForm] DeleteCourseRequest request)
+        public async Task<IActionResult> DeleteCourse([FromBody] DeleteCourseRequest request)
         {
             var response = new DeleteCourseResponse();
             try
