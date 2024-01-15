@@ -15,6 +15,7 @@ namespace ELEARNING.Services.Models.Response
         public string secondCourseName { get; set; }
         public string courseDescription { get; set; }
         public string createBy { get; set; }
+        public DateTime createDate { get; set; }
         public string linkCourseIntroductionVideo { get; set; }
         public string remark { get; set; }
         public List<MyCourseSection> courseSection { get; set; }
