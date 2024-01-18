@@ -33,6 +33,7 @@ namespace ELEARNING.Services.Models.Response
     {
         public string videoName { get; set; }
         public int videoNumber { get; set; }
+        public string videoLength { get; set; }
         public string linkCourseVideo { get; set; }
     }
 }

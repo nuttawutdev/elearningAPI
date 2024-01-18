@@ -760,6 +760,7 @@ namespace ELEARNING.Services.Services
                                 videoName = d.Video_Name,
                                 videoNumber = d.Video_Number,
                                 linkCourseVideo = allVideoFromFolder?.Data.FirstOrDefault(c => c.Id.ToString() == d.Video_ID)?.Player_Embed_Url,
+                                videoLength = Utility.ConvertToFormatTime(allVideoFromFolder?.Data.FirstOrDefault(c => c.Id.ToString() == d.Video_ID)?.Duration)
                             }).ToList()
                         }).ToList()
                     };
