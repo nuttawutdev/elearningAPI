@@ -55,10 +55,36 @@ namespace ELEARNING.Services.Helpers
             {
                 return string.Empty;
             }
-
+            
             TimeSpan t = TimeSpan.FromSeconds(second.Value);
+            //00 Hours: 00 mins: 13 seconds
 
-            string answer = string.Format("{0:D2} Hours: {1:D2}mins: {2:D2}second",
+
+            string format = string.Empty;
+            if (t.Hours > 0)
+            {
+                format += "{0:D1} Hours:";
+            }
+
+            if (t.Minutes > 0)
+            {
+                if (format != string.Empty)
+                {
+                    format += " ";
+                }
+                format += "{1:D1} mins:";
+            }
+
+            if (t.Seconds > 0)
+            {
+                if (format != string.Empty)
+                {
+                    format += " ";
+                }
+                format += "{2:D1} seconds";
+            }
+
+            string answer = string.Format(format,
                             t.Hours,
                             t.Minutes,
                             t.Seconds);
