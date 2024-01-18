@@ -12,7 +12,7 @@ namespace ELEARNING.Services.Helpers
             {
                 return (null, 0);
             }
-            
+
             try
             {
                 BinaryContent binaryContent = new BinaryContent(file.OpenReadStream(), file.ContentType);
@@ -47,6 +47,23 @@ namespace ELEARNING.Services.Helpers
             {
                 return (null, 0);
             }
+        }
+
+        public static string ConvertToFormatTime(int? second)
+        {
+            if (!second.HasValue)
+            {
+                return string.Empty;
+            }
+
+            TimeSpan t = TimeSpan.FromSeconds(second.Value);
+
+            string answer = string.Format("{0:D2}Hours:{1:D2}mins:{2:D2}second",
+                            t.Hours,
+                            t.Minutes,
+                            t.Seconds);
+
+            return answer;
         }
     }
 }
